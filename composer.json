@@ -1,0 +1,13 @@
+{
+    "name": "medigeek/php-ips-qr-code",
+    "description": "PHP IPS QR Code (National Bank of Serbia) Parser",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Savvas Radevic",
+            "email": "sradevic@gmail.com"
+        }
+    ],
+    "require": {}
+}
