@@ -26,34 +26,16 @@
 
 namespace MediGeek;
 
-class IPSQRCode {
-    private $QRCodeKeyMap = [
-        "K"     => "IdentificationCode", //PR 3a (max 3, a=alpha chars)
-        "V"     => "Version", //01 2n (max 2, n=numeric chars)
-        "C"     => "CharacterSet", //1 = 1n
-        "R"     => "BankAccountNumber", //18n
-        "N"     => "PayeeNameAndPlace", //1..70n
-        "I"     => "CurrencyAndAmount",//5..20n RSDx,xx
-        "O"     => "PayerAccountNumber",//18n
-        "P"     => "PayerNameAndPlace",//0..70a
-        "SF"    => "PaymentCode", //3n -- sifra placanja npr 122
-        "S"     => "PaymentPurpose", //0..35a
-        "M"     => "MCC", //4n
-        "JS"    => "OneTimePaymentCode", //5n
-        "RO"    => "PayeeApprovalCodeReference", //0..35a Poziv na broj odobrenja primaoca placanja
-        "RL"    => "PayeeReferenceCode", //0..140a Referenca primaoca placanja
-        "RP"    => "POSTransactionReferenceCode" //19n Referenca koja identifikuje transakciju na prodajnom mestu
-    ];
-    
-    private array $QRCodeParsed = [];
-    private array $QRCodeMapped = [];
-    
+class IPSQRCodeObject {
     private string $IdentificationCode;
     private string $Version;
     private string $CharacterSet;
     private string $BankAccountNumber;
     private string $PayeeNameAndPlace;
     private string $CurrencyAndAmount;
+    private string $Currency;
+    private string $AmountIntegers;
+    private string $AmountDecimals;
     private string $PayerAccountNumber;
     private string $PayerNameAndPlace;
     private string $PaymentCode;
@@ -65,26 +47,6 @@ class IPSQRCode {
     private string $POSTransactionReferenceCode;
     
     
-    public function __construct(array $QRCodeParsed)
-    {
-        $this->QRCodeParsed = $QRCodeParsed;
-        $this->mapKeys();
-    }
-    
-    public function mapKeys()
-    {
-        foreach ($this->QRCodeParsed as $key => $value)
-        {
-            if (array_key_exists($key, $this->QRCodeKeyMap)) {
-                $this->QRCodeMapped[$this->QRCodeKeyMap[$key]] = $value;
-            }
-        }
-        
-        return true;
-    }
-    
-     
-    
     public function get(string $key, string $returntype = "array") {
         
         $tmpString = $this->$key;
@@ -94,6 +56,7 @@ class IPSQRCode {
         }
         elseif ($returntype == "json") {
             $jsonArray = json_encode($tmpString);
+            return $jsonArray;
         }
     }
     
@@ -144,27 +107,73 @@ class IPSQRCode {
  */
 class IPSQRCodeParser {
     
-    private $QRCodeParsed = [];
-    private $QRCodeMapped = [];
-    private $QRCodeObject = [];
+    private array $currencyVariables = [
+        "decimalPointCharacter" => ",",
+        "currencyName" => "RSD",
+    ];
+
+    private array $QRCodeKeyMap = [
+        "K"     => "IdentificationCode", //PR 3a (max 3, a=alpha chars)
+        "V"     => "Version", //01 2n (max 2, n=numeric chars)
+        "C"     => "CharacterSet", //1 = 1n
+        "R"     => "BankAccountNumber", //18n
+        "N"     => "PayeeNameAndPlace", //1..70n
+        "I"     => "CurrencyAndAmount",//5..20n RSDx,xx
+        "O"     => "PayerAccountNumber",//18n
+        "P"     => "PayerNameAndPlace",//0..70a
+        "SF"    => "PaymentCode", //3n -- sifra placanja npr 122
+        "S"     => "PaymentPurpose", //0..35a
+        "M"     => "MCC", //4n
+        "JS"    => "OneTimePaymentCode", //5n
+        "RO"    => "PayeeApprovalCodeReference", //0..35a Poziv na broj odobrenja primaoca placanja
+        "RL"    => "PayeeReferenceCode", //0..140a Referenca primaoca placanja
+        "RP"    => "POSTransactionReferenceCode" //19n Referenca koja identifikuje transakciju na prodajnom mestu
+    ];
     
-    public function __construct($QRCode)
+    private array $QRCodeParsed = [];
+    private $QRCodeObject;
+    private string $QRCodeString;
+    
+    public function __construct($QRCodeString)
     {
-        //echo $QRCode;
-        $this->parseSplit($QRCode);
-        //var_dump($this->QRCodeParsed);
-        //$QRCodeObject = new IPSQRCode($this->QRCodeParsed);
-        $this->QRCodeObject = new IPSQRCode($this->QRCodeParsed);
-        
-        $this->QRCodeMapped = $this->QRCodeObject->get("QRCodeMapped");
-        $this->parseCurrencyAndAmount();
-        var_dump($this->QRCodeMapped);
-        //var_dump($this->QRCodeObject->get("QRCodeMapped"));
-        //var_dump();
+        //set QRCodeObject
+        $this->QRCodeObject = new IPSQRCodeObject();
+        //set QRCodeString
+        $this->QRCodeString = $QRCodeString;
+        //parse
+        $this->parse();
+        var_dump($this->get());
     }
     
-    public function parseSplit($QRCode) {
-        $splitQRCode = explode("|", $QRCode);
+        
+    public function mapKeys()
+    {
+        foreach ($this->QRCodeParsed as $keyCode => $value)
+        {
+            if (array_key_exists($keyCode, $this->QRCodeKeyMap)) {
+                $keyName = $this->QRCodeKeyMap[$keyCode];
+                //$this->QRCodeMapped[$this->QRCodeKeyMap[$keyCode]] = $value;
+                $this->QRCodeObject->set($keyName, $value);
+            }
+        }
+    }
+    
+    public function get(string $returntype = 'array') {
+        //return QRCodeObject vars
+        return $this->QRCodeObject->getAll($returntype);
+    }
+    
+    public function parse() {
+        //parse and set QRCodeParsed
+        $this->parseSplit();
+        //map keyCode to keyName (QRCodeObject vars)
+        $this->mapKeys();
+        //parse and define currency and amount properties from CurrencyAndAmount
+        $this->parseCurrencyAndAmount();
+    }
+    
+    public function parseSplit() {
+        $splitQRCode = explode("|", $this->QRCodeString);
         
         foreach ($splitQRCode as $i) {
             $spliti = explode(":", $i);
@@ -179,21 +188,19 @@ class IPSQRCodeParser {
     public function parseCurrencyAndAmount()
     {
         $s = $this->QRCodeParsed["I"];
-        $currencyName = "RSD";
-        $splitCurrency = explode($currencyName, $s);
-        $decimalPointCharacter = ",";
-        $splitAmount = explode($decimalPointCharacter, $splitCurrency[1]);
+        $splitCurrency = explode(
+            $this->currencyVariables["currencyName"], 
+            $s
+        );
+        $splitAmount = explode(
+            $this->currencyVariables["decimalPointCharacter"], 
+            $splitCurrency[1]
+        );
         
-        //var_dump($splitAmount);
-        $newArray = $this->QRCodeMapped;
-        $newArray["CurrencyAndAmount"] = [
-            "Currency" => $currencyName,
-            "AmountInteger" => $splitAmount[0],
-            "AmountDecimals" => $splitAmount[1]
-        ];
-        
-        $this->QRCodeMapped = $newArray;
-        $this->QRCodeObject->set("QRCodeMapped", $this->QRCodeMapped);
+        //define 
+        $this->QRCodeObject->set("Currency", $this->currencyVariables["currencyName"]);
+        $this->QRCodeObject->set("AmountInteger", $splitAmount[0]);
+        $this->QRCodeObject->set("AmountDecimals", $splitAmount[1]);
         
     }
     
