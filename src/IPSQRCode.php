@@ -27,28 +27,43 @@
 namespace MediGeek;
 
 class IPSQRCode {
-    
-    //"K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9135,68|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515591052-20060-1"
     private $QRCodeKeyMap = [
-        "K" => "IdentificationCode", //PR 3a (max 3, a=alpha chars)
-        "V" => "Version", //01 2n (max 2, n =numeric chars)
-        "C" => "CharacterSet", //1 = 1n
-        "R" => "BankAccountNumber", //18n
-        "N" => "MerchantNameAndPlace", //1..70n
-        "I" => "CurrencyAndAmount",//5..20n RSDx,xx
-        "O" => "PayerAccountNumber",//18n
-        "P" => "PayerNameAndPlace",//0..70a
-        "SF" => "PaymentCode", //3n -- sifra placanja npr 122
-        "S" => "PaymentPurpose", //0..35a
-        "M" => "MCC", //4n
-        "JS" => "OneTimePaymentCode", //5n
-        "RO" => "PayeeApprovalCodeReference", //0..35a Poziv na broj odobrenja primaoca placanja
-        "RL" => "PayeeReferenceCode", //0..140a Referenca primaoca placanja
-        "RP" => "POSTransactionReferenceCode" //19n Referenca koja identifikuje transakciju na prodajnom mestu
+        "K"     => "IdentificationCode", //PR 3a (max 3, a=alpha chars)
+        "V"     => "Version", //01 2n (max 2, n=numeric chars)
+        "C"     => "CharacterSet", //1 = 1n
+        "R"     => "BankAccountNumber", //18n
+        "N"     => "PayeeNameAndPlace", //1..70n
+        "I"     => "CurrencyAndAmount",//5..20n RSDx,xx
+        "O"     => "PayerAccountNumber",//18n
+        "P"     => "PayerNameAndPlace",//0..70a
+        "SF"    => "PaymentCode", //3n -- sifra placanja npr 122
+        "S"     => "PaymentPurpose", //0..35a
+        "M"     => "MCC", //4n
+        "JS"    => "OneTimePaymentCode", //5n
+        "RO"    => "PayeeApprovalCodeReference", //0..35a Poziv na broj odobrenja primaoca placanja
+        "RL"    => "PayeeReferenceCode", //0..140a Referenca primaoca placanja
+        "RP"    => "POSTransactionReferenceCode" //19n Referenca koja identifikuje transakciju na prodajnom mestu
     ];
     
-    private $QRCodeParsed = [];
-    private $QRCodeMapped = [];
+    private array $QRCodeParsed = [];
+    private array $QRCodeMapped = [];
+    
+    private string $IdentificationCode;
+    private string $Version;
+    private string $CharacterSet;
+    private string $BankAccountNumber;
+    private string $PayeeNameAndPlace;
+    private string $CurrencyAndAmount;
+    private string $PayerAccountNumber;
+    private string $PayerNameAndPlace;
+    private string $PaymentCode;
+    private string $PaymentPurpose;
+    private string $MCC;
+    private string $OneTimePaymentCode;
+    private string $PayeeApprovalCodeReference;
+    private string $PayeeReferenceCode;
+    private string $POSTransactionReferenceCode;
+    
     
     public function __construct(array $QRCodeParsed)
     {
@@ -186,4 +201,4 @@ class IPSQRCodeParser {
 }
 
 
-new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9135,68|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515591052-20060-1");
+new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9999,99|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515599052-20060-1");
