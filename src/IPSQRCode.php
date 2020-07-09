@@ -139,7 +139,7 @@ class IPSQRCodeParser {
         "POSTransactionReferenceCode"   => '/^[0-9]{1}$/', //19n Referenca koja identifikuje transakciju na prodajnom mestu
         "Currency"                      => '/^[A-Z]{1,3}$/',
         "AmountInteger"                 => '/^[0-9]+$/',
-        "AmountDecimals"                 => '/^[0-9]+$/',
+        "AmountDecimals"                => '/^[0-9]+$/',
     ];
 
     private array $QRCodeKeyMap = [
