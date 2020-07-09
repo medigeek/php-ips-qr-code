@@ -122,7 +122,7 @@ class IPSQRCodeParser {
     
     private array $variableValidationRegExpStrings = [
         //\\p{L} = unicode letter
-        "IdentificationCode"            => '/^[\\w\\r\\n\\p{L}]{1,3}$/',  //PR 3a (max 3, a=alpha chars)
+        "IdentificationCode"            => '/^.{1,3}$/',  //PR 3a (max 3, a=alpha chars)
         "Version"                       => '/^[0-9]{1,2}$/',  //01 2n (max 2, n=numeric chars)
         "CharacterSet"                  => '/^[0-9]{1}$/',  //1 = 1n
         "BankAccountNumber"             => '/^[0-9]{18}$/',  //18n
@@ -132,11 +132,11 @@ class IPSQRCodeParser {
         "PayerNameAndPlace"             => '/^.{1,70}?$/m', //0..70a
         "PaymentCode"                   => '/^[0-9]{3}$/',  //3n -- sifra placanja npr 122
         "PaymentPurpose"                => '/^.{1,35}$/m',  //0..35a
-        "MCC"                           => '/^[0-9]{1}$/',  //4n
-        "OneTimePaymentCode"            => '/^[0-9]{1}$/',  //5n
+        "MCC"                           => '/^[0-9]{4}$/',  //4n
+        "OneTimePaymentCode"            => '/^[0-9]{5}$/',  //5n
         "PayeeApprovalCodeReference"    => '/^[0-9]{0,35}$/',  //0..35a Poziv na broj odobrenja primaoca placanja
-        "PayeeReferenceCode"            => '/^[0-9]{1}$/',  //0..140a Referenca primaoca placanja
-        "POSTransactionReferenceCode"   => '/^[0-9]{1}$/', //19n Referenca koja identifikuje transakciju na prodajnom mestu
+        "PayeeReferenceCode"            => '/^[0-9]{0,140}$/',  //0..140a Referenca primaoca placanja
+        "POSTransactionReferenceCode"   => '/^[0-9]{19}$/', //19n Referenca koja identifikuje transakciju na prodajnom mestu
         "Currency"                      => '/^[A-Z]{1,3}$/',
         "AmountInteger"                 => '/^[0-9]+$/',
         "AmountDecimals"                => '/^[0-9]+$/',
