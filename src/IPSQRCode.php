@@ -42,7 +42,7 @@ class IPSQRCodeObject {
     private string $PaymentPurpose;
     private string $MCC;
     private string $OneTimePaymentCode;
-    private string $PayeeApprovalCodeReference;
+    private string $PayeeApprovalReferenceCode;
     private string $PayeeReferenceCode;
     private string $POSTransactionReferenceCode;
     
@@ -109,7 +109,16 @@ class IPSQRCodeObject {
 }
 
 /**
- * Description of IPSQRCode
+ * IPS QR Code Parser
+ * 
+ * As per the National Bank of Serbia specifications:
+ * Odluka o opštim pravilima za izvršavanje instant transfera odobrenja 
+ * „Službeni glasnik RS“, br. 65/2018, 78/2018 i 20/2019
+ * Prilog 1
+ * 
+ * https://www.nbs.rs/internet/latinica/20/index_plp.html
+ * https://www.nbs.rs/internet/latinica/20/plp/instant_odobrenja_p.pdf
+ * https://www.nbs.rs/export/sites/default/internet/latinica/20/plp/instant_transfer_2019_p_p.docx
  *
  * @author Savvas Radevic
  */
@@ -121,43 +130,234 @@ class IPSQRCodeParser {
     ];
     
     private array $variableValidationRegExpStrings = [
-        //\\p{L} = unicode letter
-        "IdentificationCode"            => '/^.{1,3}$/',  //PR 3a (max 3, a=alpha chars)
-        "Version"                       => '/^[0-9]{1,2}$/',  //01 2n (max 2, n=numeric chars)
-        "CharacterSet"                  => '/^[0-9]{1}$/',  //1 = 1n
-        "BankAccountNumber"             => '/^[0-9]{18}$/',  //18n
-        "PayeeNameAndPlace"             => '/^.{1,70}$/m',  //1..70a
-        "CurrencyAndAmount"             => '/^[0-9,A-Z]{5,20}$/', //5..20n RSDx,xx
-        "PayerAccountNumber"            => '/^[0-9]{1}$/', //18n
-        "PayerNameAndPlace"             => '/^.{1,70}?$/m', //0..70a
-        "PaymentCode"                   => '/^[0-9]{3}$/',  //3n -- sifra placanja npr 122
-        "PaymentPurpose"                => '/^.{1,35}$/m',  //0..35a
-        "MCC"                           => '/^[0-9]{4}$/',  //4n
-        "OneTimePaymentCode"            => '/^[0-9]{5}$/',  //5n
-        "PayeeApprovalCodeReference"    => '/^[0-9]{0,35}$/',  //0..35a Poziv na broj odobrenja primaoca placanja
-        "PayeeReferenceCode"            => '/^[0-9]{0,140}$/',  //0..140a Referenca primaoca placanja
-        "POSTransactionReferenceCode"   => '/^[0-9]{19}$/', //19n Referenca koja identifikuje transakciju na prodajnom mestu
-        "Currency"                      => '/^[A-Z]{1,3}$/',
-        "AmountInteger"                 => '/^[0-9]+$/',
-        "AmountDecimals"                => '/^[0-9]+$/',
+        
+        /* 
+         * IdentificationCode
+         * Таг K: идентификациони кôд означава садржај IPS QR кôда и може имати 
+         * следеће вредности: 
+         *   – PR – за генерисање IPS QR кôда на штампаном рачуну-фактури примаоца плаћања;
+         *   – PT – за генерисање IPS QR кôда на продајном месту примаоца плаћања, 
+         * презентованог од стране примаоца плаћања (трговца);
+         *   – PK – за генерисање IPS QR кôда на продајном месту примаоца плаћања, 
+         * презентованог од стране платиоца (купца);
+         *   – EK –  за генерисање IPS QR кôда у апликативном софтверу интернет продајног места.
+         * 
+         * PR|PT|PK|EK 3a (max a, a=alpha/text chars)
+         */
+        "IdentificationCode" => '/^(PR|PT|PK|EK)$/',
+        
+        /*
+         * Version
+         * Taг V: верзија означава верзију презентације IPS QR кôда, 
+         * фиксна вредност 01.
+         * 01 2n (max 2, n=numeric chars)
+         */
+        "Version" => '/^[0-9]{1,2}$/',
+        
+        /*
+         * CharacterSet
+         * Таг C: знаковни скуп означава знаковни скуп који се користи у 
+         * презентацији, фиксна вредност 1 означава употребу UTF-8 кодног распореда.
+         * 
+         * 1 1n
+         */
+        "CharacterSet" => '/^1$/',
+        
+        /*
+         * BankAccountNumber
+         * Таг R: број рачуна примаоца плаћања означава број текућег, односно
+         * другог платног рачуна примаоца плаћања у складу с прописима, који 
+         * се уписује искључиво као низ од 18 цифара.
+         * 
+         * 18n
+         */
+        "BankAccountNumber" => '/^[0-9]{18}$/',
+        
+        /*
+         * PayeeNameAndPlace
+         * Таг N: назив и седиште примаоца плаћања означава пословно име или 
+         * скраћено пословно име примаоца плаћања, односно његов назив под 
+         * којим је евидентиран у регистру код надлежног органа. 
+         * Подаци, опционо, могу обухватити и адресу седишта примаоца плаћања. 
+         * Подаци се наводе редом (назив и седиште примаоца плаћања, адреса 
+         * седишта), одвојени знаком за нову линију.
+         * Код употребе на продајним местима трговаца користи се, ако је 
+         * могуће, само скраћено пословно име. Уколико назив примаоца плаћања 
+         * садржи и место седишта тог примаоца, није потребно посебно наводити 
+         * седиште.
+         * 
+         * 1..70an
+         */
+        "PayeeNameAndPlace" => '/^.{1,70}$/m',
+        
+        /*
+         * CurrencyAndAmount
+         * Таг I: валута и износ новчаних средстава представља ознаку РСД и износ 
+         * за који се обавезно уписује децимални зарез иза кога се не морају 
+         * писати неважеће децималне нуле (нпр.  RSD1025,). Минимални износ налога 
+         * је RSD0,01, а максимални износ налога је RSD999999999999,99. При уносу 
+         * износа не уносе се сепаратори хиљада (.). Није дозвољено изоставити 
+         * цифру за цело место у износу. На пример: RSD,01 није исправан износ, 
+         * исправно је RSD0,01. Код употребе IPS QR кôда на штампаним 
+         * рачунима-фактурама, прималац плаћања може у том кôду приказати и 
+         * износ 0,00 динара (нпр. RSD0,00 или RSD0,).
+         * 
+         * 5..18an RSDx,xx
+         */
+        "CurrencyAndAmount" => '/^RSD[0-9]{1,12},[0-9]{0,2}$/',
+        
+        /*
+         * PayerAccountNumber
+         * Таг O: број рачуна платиоца означава број текућег, односно другог 
+         * платног рачуна платиоца у складу с прописима, који се уписује 
+         * искључиво као низ од 18 цифара.
+         * 
+         * 18n
+         */
+        "PayerAccountNumber" => '/^[0-9]{18}$/', 
+        
+        /*
+         * Таг P: назив и седиште платиоца представља име и презиме, односно 
+         * назив и седиште платиоца, адресу, односно седиште платиоца (адреса 
+         * седишта платиоца) који се наводе тим редом, одвојени знаком за нову 
+         * линију.
+         * 
+         * 0..70an
+         */
+        "PayerNameAndPlace" => '/^.{0,70}?$/m',
+        
+        /*
+         * PaymentCode
+         * Таг SF: шифра плаћања означава нумерички податак од три цифре, од 
+         * којих прва идентификује облик плаћања, а друге две основ плаћања.
+         * 
+         * 3n
+         */
+        "PaymentCode" => '/^[0-9]{3}$/',
+        
+        /*
+         * PaymentPurpose
+         * Таг S: сврха плаћања означава податке о намени и основу преноса 
+         * новчаних средстава.
+         * 
+         * 0..35an
+         */
+        "PaymentPurpose" => '/^.{1,35}$/m',
+        
+        /*
+         * MCC
+         * Таг M: MCC је ознака-кôд категорије трговца (енг. Merchant Code 
+         * Category) у складу са ISO 18245. Списак дозвољених кôдова утврђује 
+         * се техничком документацијом платног система у којем се извршава 
+         * инстант трансфер одобрења на основу употребе платног инструмента на 
+         * продајном месту у којој је дато и упутство за пресликавање тих 
+         * кôдова у налог за пренос у том систему.
+         * 
+         * 4n
+         */
+        "MCC" => '/^[0-9]{4}$/',
+        
+        /*
+         * OneTimePaymentCode
+         * Таг JS: једнократна шифра платиоца представља ТОТР вредност 
+         * (енг. Time-based One Time Password) – једнократну шифру чије је 
+         * важење временски ограничено, нпр. пет минута. Једнократну шифру 
+         * генерише платиочев пружалац платних услуга, која се користи ради 
+         * одобравања извршења платне трансакције, у складу с оквирним уговором 
+         * и прописима.
+         * 
+         * 10an
+         */
+        "OneTimePaymentCode"            => '/^[0-9]{5}$/',
+        
+        /*
+         * PayerReferenceCode
+         * Tаг RK: референца платиоца (купца) представља ознаку коју утврђује 
+         * платиочев пружалац платних услуга и која се, као допунски податак о 
+         * платиоцу, користи ради одобравања извршења платне трансакције, у 
+         * складу са оквирним уговором и прописима.
+         * 
+         * 8an
+         */
+        "PayerReferenceCode"    => '/^[0-9]{0,8}$/',
+        
+        /*
+         * PayeeApprovalReferenceCode
+         * Таг RO: позив на број одобрења примаоца плаћања означава допунске 
+         * податке за примаоца плаћања у складу с прописима. Позив на број 
+         * одобрења обухвата и број модела који се уписује испред садржаја 
+         * позива на број одобрења. 
+         * Ако позив на број није утврђен ни према једном моделу (нпр. позив 
+         * на број одобрења је 1234), тада се уписују две водеће нуле 
+         * (нпр. 001234). 
+         * Ако је позив на број утврђен према моделу 97, садржај позива на број 
+         * уписује се искључиво у низу без цртица, односно размака (нпр. позив 
+         * на број одобрења 9714123412, у којем је 97 број модела, а 14 је 
+         * контролни број који је у складу с прописима израчунат по моделу 97 
+         * за низ 123412).
+         * У случају генерисања IPS QR кôда са идентификационим кôдом 
+         * „PT“ и „EK“ – пружалац платних услуга трговца (прихватилац) може 
+         * користити овај таг за генерисање референце која идентификује 
+         * трансакцију на продајном месту и која представља јединствени 
+         * идентификатор самог плаћања, узимајући у обзир и потребу за правилном 
+         * идентификацијом наплатног места трговца на којем се може издати 
+         * захтев за плаћање, ради недвосмислене идентификације тог наплатног 
+         * места у извршавању платне трансакције.
+         * 
+         * 0..35an Poziv na broj / Referenca primaoca placanja
+         */
+        "PayeeApprovalReferenceCode" => '/^[0-9]{0,35}$/',
+        
+        /*
+         * PayeeReferenceCode
+         * Таг RL: референца примаоца плаћања означава допунске податке за 
+         * платиоца/примаоца плаћања у слободној форми.
+         * 
+         * 0..140an Referenca koja identifikuje transakciju na prodajnom mestu
+         */
+        "PayeeReferenceCode" => '/^[0-9]{0,140}$/',
+        
+        /*
+         * POSTransactionReferenceCode
+         * Таг RP: референца која идентификује трансакцију на продајном месту 
+         * представља јединствени идентификатор самог плаћања, укупне дужине 
+         * 19 карактера у следећем формату: 
+         * 
+         * [TID 8an][Year 2n][Julian day – redni broj dana u godini 3n][Transaction number 6n] 
+         * 
+         * Сваки део наведене референце мора имати утврђен број карактера, тако 
+         * да се обавезно уписују и водеће нуле. 
+         * TID (енг. Тerminal Identification) представља јединствену 
+         * идентификациону ознаку коју дефинише пружалац платних услуга трговца 
+         * (прихватилац) за свако наплатно место трговца на којем се може 
+         * издати захтев за плаћање, ради недвосмислене идентификације тог 
+         * наплатног места у извршавању платне трансакције.
+         * 
+         * 19an
+         */
+        "POSTransactionReferenceCode"   => '/^[0-9]{19}$/',
+        
+        "Currency"                      => '/^RSD$/',
+        "AmountInteger"                 => '/^[0-9]{1,12}$/',
+        "AmountDecimals"                => '/^[0-9]{0,2}$/',
     ];
 
     private array $QRCodeKeyMap = [
-        "K"     => "IdentificationCode", //PR 3a (max 3, a=alpha chars)
-        "V"     => "Version", //01 2n (max 2, n=numeric chars)
-        "C"     => "CharacterSet", //1 = 1n
-        "R"     => "BankAccountNumber", //18n
-        "N"     => "PayeeNameAndPlace", //1..70n
-        "I"     => "CurrencyAndAmount",//5..20n RSDx,xx
-        "O"     => "PayerAccountNumber",//18n
-        "P"     => "PayerNameAndPlace",//0..70a
-        "SF"    => "PaymentCode", //3n -- sifra placanja npr 122
-        "S"     => "PaymentPurpose", //0..35a
-        "M"     => "MCC", //4n
-        "JS"    => "OneTimePaymentCode", //5n
-        "RO"    => "PayeeApprovalCodeReference", //0..35a Poziv na broj odobrenja primaoca placanja
-        "RL"    => "PayeeReferenceCode", //0..140a Referenca primaoca placanja
-        "RP"    => "POSTransactionReferenceCode" //19n Referenca koja identifikuje transakciju na prodajnom mestu
+        "K"     => "IdentificationCode",
+        "V"     => "Version",
+        "C"     => "CharacterSet",
+        "R"     => "BankAccountNumber",
+        "N"     => "PayeeNameAndPlace",
+        "I"     => "CurrencyAndAmount",
+        "O"     => "PayerAccountNumber",
+        "P"     => "PayerNameAndPlace",
+        "SF"    => "PaymentCode",
+        "S"     => "PaymentPurpose",
+        "M"     => "MCC",
+        "JS"    => "OneTimePaymentCode",
+        "RO"    => "PayeeApprovalReferenceCode",
+        "RL"    => "PayeeReferenceCode",
+        "RP"    => "POSTransactionReferenceCode"
     ];
     
     private array $QRCodeParsed = [];
