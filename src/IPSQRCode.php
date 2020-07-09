@@ -59,6 +59,13 @@ class IPSQRCodeObject {
             return $jsonArray;
         }
     }
+
+    public function validate(string $key, $value) {
+        $regExpStrings = [
+            ""
+        ];
+        return true;
+    }
     
     public function set(string $key, $value) {
         $this->$key = $value;
@@ -89,6 +96,7 @@ class IPSQRCodeObject {
     
     public function getAll(string $returntype = "array") {
         $keyValuePairs = get_object_vars($this);
+        ksort($keyValuePairs);
         
         if ($returntype == "array") {
             return $keyValuePairs;
@@ -110,6 +118,28 @@ class IPSQRCodeParser {
     private array $currencyVariables = [
         "decimalPointCharacter" => ",",
         "currencyName" => "RSD",
+    ];
+    
+    private array $variableValidationRegExpStrings = [
+        //\\p{L} = unicode letter
+        "IdentificationCode"            => '/^[\\w\\r\\n\\p{L}]{1,3}$/',  //PR 3a (max 3, a=alpha chars)
+        "Version"                       => '/^[0-9]{1,2}$/',  //01 2n (max 2, n=numeric chars)
+        "CharacterSet"                  => '/^[0-9]{1}$/',  //1 = 1n
+        "BankAccountNumber"             => '/^[0-9]{18}$/',  //18n
+        "PayeeNameAndPlace"             => '/^.{1,70}$/m',  //1..70a
+        "CurrencyAndAmount"             => '/^[0-9,A-Z]{5,20}$/', //5..20n RSDx,xx
+        "PayerAccountNumber"            => '/^[0-9]{1}$/', //18n
+        "PayerNameAndPlace"             => '/^.{1,70}?$/m', //0..70a
+        "PaymentCode"                   => '/^[0-9]{3}$/',  //3n -- sifra placanja npr 122
+        "PaymentPurpose"                => '/^.{1,35}$/m',  //0..35a
+        "MCC"                           => '/^[0-9]{1}$/',  //4n
+        "OneTimePaymentCode"            => '/^[0-9]{1}$/',  //5n
+        "PayeeApprovalCodeReference"    => '/^[0-9]{0,35}$/',  //0..35a Poziv na broj odobrenja primaoca placanja
+        "PayeeReferenceCode"            => '/^[0-9]{1}$/',  //0..140a Referenca primaoca placanja
+        "POSTransactionReferenceCode"   => '/^[0-9]{1}$/', //19n Referenca koja identifikuje transakciju na prodajnom mestu
+        "Currency"                      => '/^[A-Z]{1,3}$/',
+        "AmountInteger"                 => '/^[0-9]+$/',
+        "AmountDecimals"                 => '/^[0-9]+$/',
     ];
 
     private array $QRCodeKeyMap = [
@@ -153,8 +183,24 @@ class IPSQRCodeParser {
             if (array_key_exists($keyCode, $this->QRCodeKeyMap)) {
                 $keyName = $this->QRCodeKeyMap[$keyCode];
                 //$this->QRCodeMapped[$this->QRCodeKeyMap[$keyCode]] = $value;
-                $this->QRCodeObject->set($keyName, $value);
+                $this->setQRCodeObjectVar($keyName, $value);
             }
+        }
+    }
+    
+    public function validate($keyName, $value)
+    {
+        $regexp = $this->variableValidationRegExpStrings[$keyName];
+        if (!preg_match($regexp, $value)){
+            echo("Warning: Failed validation: $keyName -- $value -- $regexp\n");
+            return false;
+        }
+        return true;
+    }
+    
+    public function setQRCodeObjectVar($keyName, $value) {
+        if ($this->validate($keyName, $value)) {
+            $this->QRCodeObject->set($keyName, $value);
         }
     }
     
@@ -197,11 +243,10 @@ class IPSQRCodeParser {
             $splitCurrency[1]
         );
         
-        //define 
-        $this->QRCodeObject->set("Currency", $this->currencyVariables["currencyName"]);
-        $this->QRCodeObject->set("AmountInteger", $splitAmount[0]);
-        $this->QRCodeObject->set("AmountDecimals", $splitAmount[1]);
-        
+        //set QRCodeObject variables
+        $this->setQRCodeObjectVar("Currency", $this->currencyVariables["currencyName"]);
+        $this->setQRCodeObjectVar("AmountInteger", $splitAmount[0]);
+        $this->setQRCodeObjectVar("AmountDecimals", $splitAmount[1]);
     }
     
     
