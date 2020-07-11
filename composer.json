@@ -13,9 +13,6 @@
         "php": ">=7.4.0"
     },
     "autoload": {
-        "psr-4": {
-            "MediGeek\\IPSQRCodeParser\\": "src/IPSQRCode.php"
-        },
         "classmap": [
             "src/"
         ]
