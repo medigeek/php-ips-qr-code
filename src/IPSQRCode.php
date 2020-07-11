@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /*
  * The MIT License
@@ -27,6 +29,7 @@
 namespace MediGeek;
 
 class IPSQRCodeObject {
+
     private string $IdentificationCode;
     private string $Version;
     private string $CharacterSet;
@@ -45,67 +48,56 @@ class IPSQRCodeObject {
     private string $PayeeApprovalReferenceCode;
     private string $PayeeReferenceCode;
     private string $POSTransactionReferenceCode;
-    
-    
+
     public function get(string $key, string $returntype = "array") {
-        
+
         $tmpString = $this->$key;
-        
+
         if ($returntype == "array") {
             return $tmpString;
-        }
-        elseif ($returntype == "json") {
+        } elseif ($returntype == "json") {
             $jsonArray = json_encode($tmpString);
             return $jsonArray;
         }
     }
 
-    public function validate(string $key, $value) {
-        $regExpStrings = [
-            ""
-        ];
-        return true;
-    }
-    
     public function set(string $key, $value) {
         $this->$key = $value;
         return true;
     }
-    
+
     public function getMultiple(array $keys, string $returntype = "array") {
         $tmpArray = [];
         foreach ($keys as $key) {
             $tmpArray[] = $this->$key;
         }
-        
+
         if ($returntype == "array") {
             return $tmpArray;
-        }
-        elseif ($returntype == "json") {
+        } elseif ($returntype == "json") {
             $jsonArray = json_encode($tmpArray);
             return $jsonArray;
         }
     }
-    
+
     public function setMultiple(array $keyValuePairs) {
         foreach ($keyValuePairs as $key => $value) {
             $this->$key = $this->$value;
         }
-        
     }
-    
+
     public function getAll(string $returntype = "array") {
         $keyValuePairs = get_object_vars($this);
         ksort($keyValuePairs);
-        
+
         if ($returntype == "array") {
             return $keyValuePairs;
-        }
-        elseif ($returntype == "json") {
+        } elseif ($returntype == "json") {
             $KeyValuePairsJSON = json_encode($keyValuePairs);
             return $KeyValuePairsJSON;
         }
     }
+
 }
 
 /**
@@ -123,15 +115,13 @@ class IPSQRCodeObject {
  * @author Savvas Radevic
  */
 class IPSQRCodeParser {
-    
+
     private array $currencyVariables = [
         "decimalPointCharacter" => ",",
         "currencyName" => "RSD",
     ];
-    
     private array $variableValidationRegExpStrings = [
-        
-        /* 
+        /*
          * IdentificationCode
          * Таг K: идентификациони кôд означава садржај IPS QR кôда и може имати 
          * следеће вредности: 
@@ -145,7 +135,6 @@ class IPSQRCodeParser {
          * PR|PT|PK|EK 3a (max a, a=alpha/text chars)
          */
         "IdentificationCode" => '/^(PR|PT|PK|EK)$/',
-        
         /*
          * Version
          * Taг V: верзија означава верзију презентације IPS QR кôда, 
@@ -153,7 +142,6 @@ class IPSQRCodeParser {
          * 01 2n (max 2, n=numeric chars)
          */
         "Version" => '/^[0-9]{1,2}$/',
-        
         /*
          * CharacterSet
          * Таг C: знаковни скуп означава знаковни скуп који се користи у 
@@ -162,7 +150,6 @@ class IPSQRCodeParser {
          * 1 1n
          */
         "CharacterSet" => '/^1$/',
-        
         /*
          * BankAccountNumber
          * Таг R: број рачуна примаоца плаћања означава број текућег, односно
@@ -172,7 +159,6 @@ class IPSQRCodeParser {
          * 18n
          */
         "BankAccountNumber" => '/^[0-9]{18}$/',
-        
         /*
          * PayeeNameAndPlace
          * Таг N: назив и седиште примаоца плаћања означава пословно име или 
@@ -189,7 +175,6 @@ class IPSQRCodeParser {
          * 1..70an
          */
         "PayeeNameAndPlace" => '/^.{1,70}$/m',
-        
         /*
          * CurrencyAndAmount
          * Таг I: валута и износ новчаних средстава представља ознаку РСД и износ 
@@ -205,7 +190,6 @@ class IPSQRCodeParser {
          * 5..18an RSDx,xx
          */
         "CurrencyAndAmount" => '/^RSD[0-9]{1,12},[0-9]{0,2}$/',
-        
         /*
          * PayerAccountNumber
          * Таг O: број рачуна платиоца означава број текућег, односно другог 
@@ -214,8 +198,7 @@ class IPSQRCodeParser {
          * 
          * 18n
          */
-        "PayerAccountNumber" => '/^[0-9]{18}$/', 
-        
+        "PayerAccountNumber" => '/^[0-9]{18}$/',
         /*
          * Таг P: назив и седиште платиоца представља име и презиме, односно 
          * назив и седиште платиоца, адресу, односно седиште платиоца (адреса 
@@ -225,7 +208,6 @@ class IPSQRCodeParser {
          * 0..70an
          */
         "PayerNameAndPlace" => '/^.{0,70}?$/m',
-        
         /*
          * PaymentCode
          * Таг SF: шифра плаћања означава нумерички податак од три цифре, од 
@@ -234,7 +216,6 @@ class IPSQRCodeParser {
          * 3n
          */
         "PaymentCode" => '/^[0-9]{3}$/',
-        
         /*
          * PaymentPurpose
          * Таг S: сврха плаћања означава податке о намени и основу преноса 
@@ -243,7 +224,6 @@ class IPSQRCodeParser {
          * 0..35an
          */
         "PaymentPurpose" => '/^.{1,35}$/m',
-        
         /*
          * MCC
          * Таг M: MCC је ознака-кôд категорије трговца (енг. Merchant Code 
@@ -256,7 +236,6 @@ class IPSQRCodeParser {
          * 4n
          */
         "MCC" => '/^[0-9]{4}$/',
-        
         /*
          * OneTimePaymentCode
          * Таг JS: једнократна шифра платиоца представља ТОТР вредност 
@@ -268,8 +247,7 @@ class IPSQRCodeParser {
          * 
          * 10an
          */
-        "OneTimePaymentCode"            => '/^[0-9]{5}$/',
-        
+        "OneTimePaymentCode" => '/^[0-9]{5}$/',
         /*
          * PayerReferenceCode
          * Tаг RK: референца платиоца (купца) представља ознаку коју утврђује 
@@ -279,8 +257,7 @@ class IPSQRCodeParser {
          * 
          * 8an
          */
-        "PayerReferenceCode"    => '/^[0-9]{0,8}$/',
-        
+        "PayerReferenceCode" => '/^[0-9]{0,8}$/',
         /*
          * PayeeApprovalReferenceCode
          * Таг RO: позив на број одобрења примаоца плаћања означава допунске 
@@ -307,7 +284,6 @@ class IPSQRCodeParser {
          * 0..35an Poziv na broj / Referenca primaoca placanja
          */
         "PayeeApprovalReferenceCode" => '/^[0-9]{0,35}$/',
-        
         /*
          * PayeeReferenceCode
          * Таг RL: референца примаоца плаћања означава допунске податке за 
@@ -316,7 +292,6 @@ class IPSQRCodeParser {
          * 0..140an Referenca koja identifikuje transakciju na prodajnom mestu
          */
         "PayeeReferenceCode" => '/^[0-9]{0,140}$/',
-        
         /*
          * POSTransactionReferenceCode
          * Таг RP: референца која идентификује трансакцију на продајном месту 
@@ -335,37 +310,33 @@ class IPSQRCodeParser {
          * 
          * 19an
          */
-        "POSTransactionReferenceCode"   => '/^[0-9]{19}$/',
-        
-        "Currency"                      => '/^RSD$/',
-        "AmountInteger"                 => '/^[0-9]{1,12}$/',
-        "AmountDecimals"                => '/^[0-9]{0,2}$/',
+        "POSTransactionReferenceCode" => '/^[0-9]{19}$/',
+        "Currency" => '/^RSD$/',
+        "AmountInteger" => '/^[0-9]{1,12}$/',
+        "AmountDecimals" => '/^[0-9]{0,2}$/',
     ];
-
     private array $QRCodeKeyMap = [
-        "K"     => "IdentificationCode",
-        "V"     => "Version",
-        "C"     => "CharacterSet",
-        "R"     => "BankAccountNumber",
-        "N"     => "PayeeNameAndPlace",
-        "I"     => "CurrencyAndAmount",
-        "O"     => "PayerAccountNumber",
-        "P"     => "PayerNameAndPlace",
-        "SF"    => "PaymentCode",
-        "S"     => "PaymentPurpose",
-        "M"     => "MCC",
-        "JS"    => "OneTimePaymentCode",
-        "RO"    => "PayeeApprovalReferenceCode",
-        "RL"    => "PayeeReferenceCode",
-        "RP"    => "POSTransactionReferenceCode"
+        "K" => "IdentificationCode",
+        "V" => "Version",
+        "C" => "CharacterSet",
+        "R" => "BankAccountNumber",
+        "N" => "PayeeNameAndPlace",
+        "I" => "CurrencyAndAmount",
+        "O" => "PayerAccountNumber",
+        "P" => "PayerNameAndPlace",
+        "SF" => "PaymentCode",
+        "S" => "PaymentPurpose",
+        "M" => "MCC",
+        "JS" => "OneTimePaymentCode",
+        "RO" => "PayeeApprovalReferenceCode",
+        "RL" => "PayeeReferenceCode",
+        "RP" => "POSTransactionReferenceCode"
     ];
-    
     private array $QRCodeParsed = [];
     private $QRCodeObject;
     private string $QRCodeString;
-    
-    public function __construct($QRCodeString)
-    {
+
+    public function __construct($QRCodeString) {
         //set QRCodeObject
         $this->QRCodeObject = new IPSQRCodeObject();
         //set QRCodeString
@@ -374,12 +345,9 @@ class IPSQRCodeParser {
         $this->parse();
         var_dump($this->get());
     }
-    
-        
-    public function mapKeys()
-    {
-        foreach ($this->QRCodeParsed as $keyCode => $value)
-        {
+
+    public function mapKeys() {
+        foreach ($this->QRCodeParsed as $keyCode => $value) {
             if (array_key_exists($keyCode, $this->QRCodeKeyMap)) {
                 $keyName = $this->QRCodeKeyMap[$keyCode];
                 //$this->QRCodeMapped[$this->QRCodeKeyMap[$keyCode]] = $value;
@@ -387,28 +355,27 @@ class IPSQRCodeParser {
             }
         }
     }
-    
-    public function validate($keyName, $value)
-    {
+
+    public function validate($keyName, $value) {
         $regexp = $this->variableValidationRegExpStrings[$keyName];
-        if (!preg_match($regexp, $value)){
+        if (!preg_match($regexp, $value)) {
             echo("Warning: Failed validation: $keyName -- $value -- $regexp\n");
             return false;
         }
         return true;
     }
-    
+
     public function setQRCodeObjectVar($keyName, $value) {
         if ($this->validate($keyName, $value)) {
             $this->QRCodeObject->set($keyName, $value);
         }
     }
-    
+
     public function get(string $returntype = 'array') {
         //return QRCodeObject vars
         return $this->QRCodeObject->getAll($returntype);
     }
-    
+
     public function parse() {
         //parse and set QRCodeParsed
         $this->parseSplit();
@@ -417,10 +384,10 @@ class IPSQRCodeParser {
         //parse and define currency and amount properties from CurrencyAndAmount
         $this->parseCurrencyAndAmount();
     }
-    
+
     public function parseSplit() {
         $splitQRCode = explode("|", $this->QRCodeString);
-        
+
         foreach ($splitQRCode as $i) {
             $spliti = explode(":", $i);
             //key = get first item array
@@ -430,24 +397,22 @@ class IPSQRCodeParser {
             $this->QRCodeParsed[$key] = $val;
         }
     }
-    
-    public function parseCurrencyAndAmount()
-    {
+
+    public function parseCurrencyAndAmount() {
         $s = $this->QRCodeParsed["I"];
         $splitCurrency = explode(
-            $this->currencyVariables["currencyName"], 
-            $s
+                $this->currencyVariables["currencyName"],
+                $s
         );
         $splitAmount = explode(
-            $this->currencyVariables["decimalPointCharacter"], 
-            $splitCurrency[1]
+                $this->currencyVariables["decimalPointCharacter"],
+                $splitCurrency[1]
         );
-        
+
         //set QRCodeObject variables
         $this->setQRCodeObjectVar("Currency", $this->currencyVariables["currencyName"]);
         $this->setQRCodeObjectVar("AmountInteger", $splitAmount[0]);
         $this->setQRCodeObjectVar("AmountDecimals", $splitAmount[1]);
     }
-    
-    
+
 }
