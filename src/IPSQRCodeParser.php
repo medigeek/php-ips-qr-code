@@ -28,6 +28,8 @@ declare(strict_types=1);
 
 namespace MediGeek;
 
+require 'vendor/autoload.php';
+
 /**
  * IPS QR Code Parser
  * 
@@ -271,7 +273,7 @@ class IPSQRCodeParser {
         $this->QRCodeString = $QRCodeString;
         //parse
         $this->parse();
-        var_dump($this->get($returntype));
+        return $this->get($returntype);
     }
 
     public function mapKeys() {
@@ -324,7 +326,7 @@ class IPSQRCodeParser {
             $val = implode(",", array_slice($spliti, 1));
             $this->QRCodeParsed[$key] = $val;
         }
-        var_dump($this->QRCodeParsed);
+        
         return $this->QRCodeParsed;
     }
 
