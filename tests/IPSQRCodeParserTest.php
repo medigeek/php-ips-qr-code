@@ -36,7 +36,7 @@ use MediGeek\IPSQRCodeParser;
  *
  * @author Savvas Radevic
  */
-class IPSQRCodeTest extends TestCase {
+class IPSQRCodeParserTest extends TestCase {
 
     public function testIPSQRCodeParser(): void {
         $c = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9999,99|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515599052-20060-1");
