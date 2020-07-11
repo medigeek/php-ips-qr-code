@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "MediGeek\\IPSQRCodeParser\\": "src/"
+            "MediGeek\\IPSQRCodeParser\\": "src/IPSQRCode.php"
         },
         "classmap": [
             "src/"
