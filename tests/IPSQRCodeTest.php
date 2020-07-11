@@ -1,5 +1,9 @@
 <?php
 
+namespace MediGeek;
+
+//require 'bootstrap.php';
+
 use PHPUnit\Framework\TestCase;
 use MediGeek\IPSQRCodeParser;
 
@@ -35,7 +39,10 @@ use MediGeek\IPSQRCodeParser;
 class IPSQRCodeTest extends TestCase {
 
     public function testIPSQRCodeParser(): void {
+        $c = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9999,99|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515599052-20060-1");
+        
         $this->assertEquals(
+            
             array(
                 "K" => "PR",
                 "V" => "01",
@@ -47,7 +54,8 @@ class IPSQRCodeTest extends TestCase {
                 "S" => "OBJEDINJENA NAPLATA",
                 "RO"=> "11800515599052-20060-1",
             ),
-            IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9999,99|SF:122|S:OBJEDINJENA NAPLATA|RO:11800515599052-20060-1")->parseSplit()
+            
+            $c->parseSplit()
         );
     }
 

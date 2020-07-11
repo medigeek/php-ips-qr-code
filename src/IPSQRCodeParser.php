@@ -28,7 +28,7 @@ declare(strict_types=1);
 
 namespace MediGeek;
 
-require 'vendor/autoload.php';
+//require 'vendor/autoload.php';
 
 /**
  * IPS QR Code Parser
@@ -273,7 +273,7 @@ class IPSQRCodeParser {
         $this->QRCodeString = $QRCodeString;
         //parse
         $this->parse();
-        return $this->get($returntype);
+        //return $this->get($returntype);
     }
 
     public function mapKeys() {

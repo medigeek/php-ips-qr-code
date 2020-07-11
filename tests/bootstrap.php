@@ -32,4 +32,4 @@
 
 // put your code here
 
-//require 'vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
