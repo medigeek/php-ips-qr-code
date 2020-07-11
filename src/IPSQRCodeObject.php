@@ -33,7 +33,8 @@ namespace MediGeek;
  *
  * @author Savvas Radevic
  */
-class IPSQRCodeObject {
+class IPSQRCodeObject
+{
 
     private string $IdentificationCode;
     private string $Version;
@@ -54,7 +55,8 @@ class IPSQRCodeObject {
     private string $PayeeReferenceCode;
     private string $POSTransactionReferenceCode;
 
-    public function get(string $key, string $returntype = "array") {
+    public function get(string $key, string $returntype = "array")
+    {
 
         $tmpString = $this->$key;
 
@@ -66,12 +68,14 @@ class IPSQRCodeObject {
         }
     }
 
-    public function set(string $key, $value) {
+    public function set(string $key, $value)
+    {
         $this->$key = $value;
         return true;
     }
 
-    public function getMultiple(array $keys, string $returntype = "array") {
+    public function getMultiple(array $keys, string $returntype = "array")
+    {
         $tmpArray = [];
         foreach ($keys as $key) {
             $tmpArray[] = $this->$key;
@@ -85,13 +89,15 @@ class IPSQRCodeObject {
         }
     }
 
-    public function setMultiple(array $keyValuePairs) {
+    public function setMultiple(array $keyValuePairs)
+    {
         foreach ($keyValuePairs as $key => $value) {
             $this->$key = $this->$value;
         }
     }
 
-    public function getAll(string $returntype = "array") {
+    public function getAll(string $returntype = "array")
+    {
         $keyValuePairs = get_object_vars($this);
         ksort($keyValuePairs);
 
@@ -102,5 +108,4 @@ class IPSQRCodeObject {
             return $KeyValuePairsJSON;
         }
     }
-
 }

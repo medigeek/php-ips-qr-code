@@ -32,19 +32,18 @@ namespace MediGeek;
 
 /**
  * IPS QR Code Parser
- * 
  * As per the National Bank of Serbia specifications:
- * Odluka o opštim pravilima za izvršavanje instant transfera odobrenja 
+ * Odluka o opštim pravilima za izvršavanje instant transfera odobrenja
  * „Službeni glasnik RS“, br. 65/2018, 78/2018 i 20/2019
  * Prilog 1
- * 
  * https://www.nbs.rs/internet/latinica/20/index_plp.html
  * https://www.nbs.rs/internet/latinica/20/plp/instant_odobrenja_p.pdf
  * https://www.nbs.rs/export/sites/default/internet/latinica/20/plp/instant_transfer_2019_p_p.docx
  *
  * @author Savvas Radevic
  */
-class IPSQRCodeParser {
+class IPSQRCodeParser
+{
 
     private array $currencyVariables = [
         "decimalPointCharacter" => ",",
@@ -53,12 +52,12 @@ class IPSQRCodeParser {
     private array $variableValidationRegExpStrings = [
         /*
          * IdentificationCode
-         * Таг K: идентификациони кôд означава садржај IPS QR кôда и може имати 
-         * следеће вредности: 
+         * Таг K: идентификациони кôд означава садржај IPS QR кôда и може имати
+         * следеће вредности:
          *   – PR – за генерисање IPS QR кôда на штампаном рачуну-фактури примаоца плаћања;
-         *   – PT – за генерисање IPS QR кôда на продајном месту примаоца плаћања, 
+         *   – PT – за генерисање IPS QR кôда на продајном месту примаоца плаћања,
          * презентованог од стране примаоца плаћања (трговца);
-         *   – PK – за генерисање IPS QR кôда на продајном месту примаоца плаћања, 
+         *   – PK – за генерисање IPS QR кôда на продајном месту примаоца плаћања,
          * презентованог од стране платиоца (купца);
          *   – EK –  за генерисање IPS QR кôда у апликативном софтверу интернет продајног места.
          * 
@@ -67,7 +66,7 @@ class IPSQRCodeParser {
         "IdentificationCode" => '/^(PR|PT|PK|EK)$/',
         /*
          * Version
-         * Taг V: верзија означава верзију презентације IPS QR кôда, 
+         * Taг V: верзија означава верзију презентације IPS QR кôда,
          * фиксна вредност 01.
          * 01 2n (max 2, n=numeric chars)
          */
@@ -266,7 +265,8 @@ class IPSQRCodeParser {
     private $QRCodeObject;
     private string $QRCodeString;
 
-    public function __construct($QRCodeString, $returntype = 'array') {
+    public function __construct($QRCodeString, $returntype = 'array')
+    {
         //set QRCodeObject
         $this->QRCodeObject = new IPSQRCodeObject();
         //set QRCodeString
@@ -276,7 +276,8 @@ class IPSQRCodeParser {
         //return $this->get($returntype);
     }
 
-    public function mapKeys() {
+    public function mapKeys()
+    {
         foreach ($this->QRCodeParsed as $keyCode => $value) {
             if (array_key_exists($keyCode, $this->QRCodeKeyMap)) {
                 $keyName = $this->QRCodeKeyMap[$keyCode];
@@ -286,7 +287,8 @@ class IPSQRCodeParser {
         }
     }
 
-    public function validate($keyName, $value) {
+    public function validate($keyName, $value)
+    {
         $regexp = $this->variableValidationRegExpStrings[$keyName];
         if (!preg_match($regexp, $value)) {
             echo("Warning: Failed validation: $keyName -- $value -- $regexp\n");
@@ -295,18 +297,21 @@ class IPSQRCodeParser {
         return true;
     }
 
-    public function setQRCodeObjectVar($keyName, $value) {
+    public function setQRCodeObjectVar($keyName, $value)
+    {
         if ($this->validate($keyName, $value)) {
             $this->QRCodeObject->set($keyName, $value);
         }
     }
 
-    public function get(string $returntype = 'array') {
+    public function get(string $returntype = 'array')
+    {
         //return QRCodeObject vars
         return $this->QRCodeObject->getAll($returntype);
     }
 
-    public function parse() {
+    public function parse()
+    {
         //parse and set QRCodeParsed
         $this->parseSplit();
         //map keyCode to keyName (QRCodeObject vars)
@@ -315,7 +320,8 @@ class IPSQRCodeParser {
         $this->parseCurrencyAndAmount();
     }
 
-    public function parseSplit() {
+    public function parseSplit()
+    {
         $splitQRCode = explode("|", $this->QRCodeString);
 
         foreach ($splitQRCode as $i) {
@@ -326,11 +332,12 @@ class IPSQRCodeParser {
             $val = implode(",", array_slice($spliti, 1));
             $this->QRCodeParsed[$key] = $val;
         }
-        
+
         return $this->QRCodeParsed;
     }
 
-    public function parseCurrencyAndAmount() {
+    public function parseCurrencyAndAmount()
+    {
         $s = $this->QRCodeParsed["I"];
         $splitCurrency = explode(
                 $this->currencyVariables["currencyName"],
