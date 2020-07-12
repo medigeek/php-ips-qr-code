@@ -69,6 +69,10 @@ IMEULICE 01
     }
 
     /**
+     * TODO:
+     * Check validate($keyName, $value)
+     * with correct and incorrect values
+     * 
      * @covers MediGeek\IPSQRCodeParser::validate
      * @todo   Implement testValidate().
      */
@@ -81,14 +85,37 @@ IMEULICE 01
     }
 
     /**
+     * TODO:
+     * check setting setQRCodeObjectVar($keyName, $value)
+     * with correct and incorrect values
+     * 
      * @covers MediGeek\IPSQRCodeParser::setQRCodeObjectVar
      * @todo   Implement testSetQRCodeObjectVar().
      */
     public function testSetQRCodeObjectVar()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
+        $this->testValidate();
+        $this->assertEquals(
+                array(
+                    'AmountDecimals' => '99',
+                    'AmountInteger' => '999',
+                    'BankAccountNumber' => '160000000000060216',
+                    'CharacterSet' => '1',
+                    'Currency' => 'RSD',
+                    'CurrencyAndAmount' => 'RSD999,99',
+                    'IdentificationCode' => 'PR',
+                    'PayeeApprovalReferenceCode' => '97082240113797893',
+                    'PayeeNameAndPlace' => 'Telekom Srbija A.D.
+Takovska 2
+Beograd',
+                    'PayerNameAndPlace' => 'SAVVAS RADEVIĆ
+IMEULICE 01
+11000 BEOGRAD 6',
+                    'PaymentCode' => '189',
+                    'PaymentPurpose' => 'MTS Račun 01/2020 12345566/2',
+                    'Version' => '01'
+                ),
+                $this->parser->QRCodeObject->getAll()
         );
     }
 
@@ -130,8 +157,7 @@ IMEULICE 01
     {
         $this->testParseSplit();
         $this->testMapKeys();
-        $this->testParseCurrencyAndAmount();
-                
+        $this->testParseCurrencyAndAmount();  
     }
 
     /**
