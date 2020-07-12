@@ -265,7 +265,7 @@ class IPSQRCodeParser
     private $QRCodeObject;
     private string $QRCodeString;
 
-    public function __construct($QRCodeString, $returntype = 'array')
+    public function __construct($QRCodeString)
     {
         //set QRCodeObject
         $this->QRCodeObject = new IPSQRCodeObject();

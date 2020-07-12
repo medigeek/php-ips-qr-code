@@ -23,16 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- see http://www.phpunit.de/wiki/Documentation -->
-<!--phpunit bootstrap="/path/to/bootstrap.php"
-         colors="false"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         stopOnFailure="true">
-</phpunit-->
-
-<phpunit colors="true" bootstrap="bootstrap.php">
+<phpunit colors="true">
     <testsuites>
         <testsuite name="Initial tests">
             <directory>tests/</directory>
