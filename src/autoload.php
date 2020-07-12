@@ -1,4 +1,4 @@
-phpab 1.25.9 - Copyright (C) 2009 - 2020 by Arne Blankerts and Contributors
+phpab 6c6a741-dirty - Copyright (C) 2009 - 2020 by Arne Blankerts and Contributors
 
 Scanning directory src
 
