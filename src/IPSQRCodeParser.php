@@ -285,6 +285,8 @@ class IPSQRCodeParser
                 $this->setQRCodeObjectVar($keyName, $value);
             }
         }
+        
+        return $this->QRCodeObject->getAll();
     }
 
     public function validate($keyName, $value)
@@ -352,6 +354,10 @@ class IPSQRCodeParser
         $this->setQRCodeObjectVar("Currency", $this->currencyVariables["currencyName"]);
         $this->setQRCodeObjectVar("AmountInteger", $splitAmount[0]);
         $this->setQRCodeObjectVar("AmountDecimals", $splitAmount[1]);
+    
+        return $this->QRCodeObject->getMultiple(
+            ["Currency", "AmountInteger", "AmountDecimals"]
+        );
     }
 
 }

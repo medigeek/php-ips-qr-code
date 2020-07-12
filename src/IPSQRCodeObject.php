@@ -78,7 +78,7 @@ class IPSQRCodeObject
     {
         $tmpArray = [];
         foreach ($keys as $key) {
-            $tmpArray[] = $this->$key;
+            $tmpArray["$key"] = $this->$key;
         }
 
         if ($returntype == "array") {

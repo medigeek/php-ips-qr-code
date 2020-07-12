@@ -14,7 +14,7 @@ class IPSQRCodeParserTest extends TestCase
     /**
      * @var IPSQRCodeParser
      */
-    protected $object;
+    protected $parser;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -22,7 +22,7 @@ class IPSQRCodeParserTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->object = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000000060216|N:Telekom Srbija A.D.
+        $this->parser = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000000060216|N:Telekom Srbija A.D.
 Takovska 2
 Beograd|I:RSD999,99|P:SAVVAS RADEVIĆ
 IMEULICE 01
@@ -35,11 +35,7 @@ IMEULICE 01
      */
     protected function tearDown(): void
     {
-        $this->object = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000000060216|N:Telekom Srbija A.D.
-Takovska 2
-Beograd|I:RSD999,99|P:SAVVAS RADEVIĆ
-IMEULICE 01
-11000 BEOGRAD 6|SF:189|S:MTS Račun 01/2020 12345566/2|RO:97082240113797893");
+        
     }
 
     /**
@@ -48,9 +44,27 @@ IMEULICE 01
      */
     public function testMapKeys()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
+        $this->assertEquals(
+            array(
+                'AmountDecimals' => '99',
+                'AmountInteger' => '999',
+                'BankAccountNumber' => '160000000000060216',
+                'CharacterSet' => '1',
+                'Currency' => 'RSD',
+                'CurrencyAndAmount' => 'RSD999,99',
+                'IdentificationCode' => 'PR',
+                'PayeeApprovalReferenceCode' => '97082240113797893',
+                'PayeeNameAndPlace' => 'Telekom Srbija A.D.
+Takovska 2
+Beograd',
+                'PayerNameAndPlace' => 'SAVVAS RADEVIĆ
+IMEULICE 01
+11000 BEOGRAD 6',
+                'PaymentCode' => '189',
+                'PaymentPurpose' => 'MTS Račun 01/2020 12345566/2',
+                'Version' => '01'
+            ),
+            $this->parser->mapKeys()
         );
     }
 
@@ -84,9 +98,27 @@ IMEULICE 01
      */
     public function testGet()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
+        $this->assertEquals(
+                array(
+                    'AmountDecimals' => '99',
+                    'AmountInteger' => '999',
+                    'BankAccountNumber' => '160000000000060216',
+                    'CharacterSet' => '1',
+                    'Currency' => 'RSD',
+                    'CurrencyAndAmount' => 'RSD999,99',
+                    'IdentificationCode' => 'PR',
+                    'PayeeApprovalReferenceCode' => '97082240113797893',
+                    'PayeeNameAndPlace' => 'Telekom Srbija A.D.
+Takovska 2
+Beograd',
+                    'PayerNameAndPlace' => 'SAVVAS RADEVIĆ
+IMEULICE 01
+11000 BEOGRAD 6',
+                    'PaymentCode' => '189',
+                    'PaymentPurpose' => 'MTS Račun 01/2020 12345566/2',
+                    'Version' => '01'
+                ),
+                $this->parser->get()
         );
     }
 
@@ -96,10 +128,10 @@ IMEULICE 01
      */
     public function testParse()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->testParseSplit();
+        $this->testMapKeys();
+        $this->testParseCurrencyAndAmount();
+                
     }
 
     /**
@@ -126,7 +158,7 @@ Beograd",
 IMEULICE 01
 11000 BEOGRAD 6"
             ),
-            $this->object->parseSplit()
+            $this->parser->parseSplit()
         );
     }
 
@@ -136,9 +168,14 @@ IMEULICE 01
      */
     public function testParseCurrencyAndAmount()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
+        $this->assertEquals(
+            
+            array(
+                'Currency' => 'RSD',
+                'AmountInteger' => '999',
+                'AmountDecimals' => '99'
+            ),
+            $this->parser->parseCurrencyAndAmount()
         );
     }
 }
