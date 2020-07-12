@@ -22,9 +22,11 @@ class IPSQRCodeParserTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->object = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000003465595"
-            . "|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD9999,99|SF:122|S:OBJEDIN"
-                . "JENA NAPLATA|RO:11800515599052-20060-1");
+        $this->object = new IPSQRCodeParser("K:PR|V:01|C:1|R:160000000000060216|N:Telekom Srbija A.D.
+Takovska 2
+Beograd|I:RSD999,99|P:SAVVAS RADEVIĆ
+IMEULICE 01
+11000 BEOGRAD 6|SF:189|S:MTS Račun 01/2020 12345566/2|RO:97082240113797893");
     }
 
     /**
@@ -106,9 +108,25 @@ IMEULICE 01
      */
     public function testParseSplit()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
+        $this->assertEquals(
+            
+            array(
+                "K" => "PR",
+                "V" => "01",
+                "C" => "1",
+                "R" => "160000000000060216",
+                "N" =>"Telekom Srbija A.D.
+Takovska 2
+Beograd",
+                "I" => "RSD999,99",
+                "SF" => "189",
+                "S" => "MTS Račun 01/2020 12345566/2",
+                "RO" => "97082240113797893",
+                "P" => "SAVVAS RADEVIĆ
+IMEULICE 01
+11000 BEOGRAD 6"
+            ),
+            $this->object->parseSplit()
         );
     }
 
