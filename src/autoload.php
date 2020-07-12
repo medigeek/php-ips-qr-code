@@ -11,12 +11,13 @@ spl_autoload_register(
         static $classes = null;
         if ($classes === null) {
             $classes = array(
-                'MediGeek\\IPSQRCodeObject' => '/IPSQRCodeObject.php',
-                'MediGeek\\IPSQRCodeParser' => '/IPSQRCodeParser.php'
+                'medigeek\\ipsqrcodeobject' => '/IPSQRCodeObject.php',
+                'medigeek\\ipsqrcodeparser' => '/IPSQRCodeParser.php'
             );
         }
-        if (isset($classes[$class])) {
-            require __DIR__ . $classes[$class];
+        $cn = strtolower($class);
+        if (isset($classes[$cn])) {
+            require __DIR__ . $classes[$cn];
         }
     },
     true,
