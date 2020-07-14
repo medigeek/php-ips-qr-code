@@ -39,8 +39,7 @@ IMEULICE 01
     }
 
     /**
-     * @covers MediGeek\IPSQRCodeParser::mapKeys
-     * @todo   Implement testMapKeys().
+     * @covers MediGeek\IPSQRCodeParser->mapKeys
      */
     public function testMapKeys()
     {
@@ -73,8 +72,7 @@ IMEULICE 01
      * Check validate($keyName, $value)
      * with correct and incorrect values
      * 
-     * @covers MediGeek\IPSQRCodeParser::validate
-     * @todo   Implement testValidate().
+     * @covers MediGeek\IPSQRCodeParser->validate
      */
     public function testValidate()
     {
@@ -89,8 +87,7 @@ IMEULICE 01
      * check setting setQRCodeObjectVar($keyName, $value)
      * with correct and incorrect values
      * 
-     * @covers MediGeek\IPSQRCodeParser::setQRCodeObjectVar
-     * @todo   Implement testSetQRCodeObjectVar().
+     * @covers MediGeek\IPSQRCodeParser->setQRCodeObjectVar
      */
     public function testSetQRCodeObjectVar()
     {
@@ -120,8 +117,7 @@ IMEULICE 01
     }
 
     /**
-     * @covers MediGeek\IPSQRCodeParser::get
-     * @todo   Implement testGet().
+     * @covers MediGeek\IPSQRCodeParser->get
      */
     public function testGet()
     {
@@ -150,8 +146,7 @@ IMEULICE 01
     }
 
     /**
-     * @covers MediGeek\IPSQRCodeParser::parse
-     * @todo   Implement testParse().
+     * @covers MediGeek\IPSQRCodeParser->parse
      */
     public function testParse()
     {
@@ -161,7 +156,7 @@ IMEULICE 01
     }
 
     /**
-     * @covers MediGeek\IPSQRCodeParser::parseSplit
+     * @covers MediGeek\IPSQRCodeParser->parseSplit
      * @todo   Implement testParseSplit().
      */
     public function testParseSplit()
@@ -189,8 +184,7 @@ IMEULICE 01
     }
 
     /**
-     * @covers MediGeek\IPSQRCodeParser::parseCurrencyAndAmount
-     * @todo   Implement testParseCurrencyAndAmount().
+     * @covers MediGeek\IPSQRCodeParser->parseCurrencyAndAmount
      */
     public function testParseCurrencyAndAmount()
     {
