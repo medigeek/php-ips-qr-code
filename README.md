@@ -9,4 +9,4 @@ IPS QR Code Parser (As per the National Bank of Serbia specs)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![Known Vulnerabilities](https://snyk.io/test/github/medigeek/php-ips-qr-code/badge.svg?targetFile=composer.lock&refresh)](https://snyk.io/test/github/medigeek/php-ips-qr-code?targetFile=composer.lock&refresh)
+[![Known Vulnerabilities](https://snyk.io/test/github/medigeek/php-ips-qr-code/badge.svg?targetFile=composer.lock)](https://snyk.io/test/github/medigeek/php-ips-qr-code?targetFile=composer.lock)
